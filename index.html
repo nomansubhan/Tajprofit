@@ -5,7 +5,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>TajProfit - Smart Investment Platform</title>
-    <link rel="icon" type="image/png" href="/assets/image/TajProfit.png" />
+    <link rel="icon" type="image/png" href="/TajProfit.png" />
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -22,7 +22,6 @@
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
 
-    <!-- Tailwind Configuration -->
     <script>
         tailwind.config = {
             theme: {
@@ -48,13 +47,12 @@
         }
     </script>
 
-    <!-- External Stylesheet -->
     <link rel="stylesheet" href="style.css" />
 </head>
 
 <body class="bg-[#f6f3fc] text-gray-800 font-sans antialiased selection:bg-purple-200">
 
-    <!-- Top Live Ticker Bar -->
+    <!-- Live Ticker Bar -->
     <header
         class="bg-gradient-to-r from-purple-950 via-purple-900 to-purple-950 text-amber-300 text-xs py-1.5 px-4 border-b border-amber-500/30 font-medium">
         <div class="max-w-7xl mx-auto flex items-center justify-between gap-4">
@@ -71,10 +69,10 @@
         </div>
     </header>
 
-    <!-- Desktop & Tablet Navigation Header -->
-    <nav class="hidden md:block bg-white/90 backdrop-blur-md sticky top-0 z-40 border-b border-purple-100 shadow-sm">
-        <div class="max-w-7xl mx-auto px-6 py-3.5 flex items-center justify-between">
-            <div class="flex items-center gap-3">
+    <!-- Desktop & Tablet Header -->
+    <nav class="hidden md:block bg-white/95 backdrop-blur-md sticky top-0 z-40 border-b border-purple-100 shadow-sm">
+        <div class="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-3 cursor-pointer" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
                 <div
                     class="w-10 h-10 rounded-xl bg-gradient-to-tr from-purple-950 to-purple-800 flex items-center justify-center border border-amber-400/60 shadow-md">
                     <span class="font-brand font-black text-amber-300 text-xl">T</span>
@@ -82,8 +80,7 @@
                 <div>
                     <h1 class="font-brand font-extrabold text-xl text-taj-purple tracking-wide leading-none">TAJ<span
                             class="text-amber-500">PROFIT</span></h1>
-                    <span class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Investment
-                        Solutions</span>
+                    <span class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Financial Yields</span>
                 </div>
             </div>
 
@@ -91,12 +88,13 @@
                 <a href="#hero" class="hover:text-purple-900 transition">Home</a>
                 <a href="#features" class="hover:text-purple-900 transition">Features</a>
                 <a href="#partners" class="hover:text-purple-900 transition">Partners</a>
-                <a href="#offices" class="hover:text-purple-900 transition">Global Offices</a>
+                <a href="#offices" class="hover:text-purple-900 transition">Global Hubs</a>
                 <button onclick="openModal('plansModal')"
                     class="text-taj-purple hover:text-amber-600 font-bold transition">View Plans</button>
             </div>
 
-            <div class="flex items-center gap-3">
+            <!-- Guest Action Buttons -->
+            <div class="flex items-center gap-3" id="authActionsDesktop">
                 <button onclick="openModal('loginModal')"
                     class="px-5 py-2 rounded-full border border-purple-300 text-taj-purple font-bold text-sm hover:bg-purple-50 transition active:scale-95">
                     Login
@@ -106,21 +104,106 @@
                     Get Started
                 </button>
             </div>
+
+            <!-- Authenticated Profile View -->
+            <div class="hidden items-center gap-4" id="userProfileDesktop">
+                <div class="text-right">
+                    <span id="userNameDisplay"
+                        class="block font-brand font-bold text-sm text-taj-purple">Investor</span>
+                    <span id="userBalanceDisplay" class="block text-xs font-bold text-emerald-600">PKR 0.00</span>
+                </div>
+                <button onclick="openTransaction('deposit')"
+                    class="px-3.5 py-1.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold hover:bg-emerald-100 transition">
+                    + Deposit
+                </button>
+                <button onclick="openTransaction('withdraw')"
+                    class="px-3.5 py-1.5 rounded-full bg-purple-50 text-purple-700 border border-purple-200 text-xs font-bold hover:bg-purple-100 transition">
+                    Withdraw
+                </button>
+                <button onclick="handleLogout()"
+                    class="w-8 h-8 rounded-full bg-red-50 text-red-600 flex items-center justify-center hover:bg-red-100 transition"
+                    title="Logout">
+                    <i class="fa-solid fa-arrow-right-from-bracket text-xs"></i>
+                </button>
+            </div>
         </div>
     </nav>
 
     <!-- Main Container -->
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8 space-y-8 sm:space-y-12 pb-24 md:pb-12">
 
+        <!-- Logged-in Live User Dashboard Panel -->
+        <section id="userDashboardCard"
+            class="hidden bg-gradient-to-r from-purple-950 via-purple-900 to-purple-950 rounded-3xl p-6 sm:p-8 text-white border-2 border-amber-400 shadow-2xl relative overflow-hidden">
+            <div class="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                <div>
+                    <div
+                        class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-400/20 text-amber-300 text-xs font-bold border border-amber-400/30 mb-2">
+                        <i class="fa-solid fa-shield-check"></i> Account Verified
+                    </div>
+                    <h2 class="text-2xl sm:text-3xl font-brand font-black text-white">
+                        Welcome back, <span id="dashUserName" class="text-amber-300">Investor</span>
+                    </h2>
+                    <p class="text-xs sm:text-sm text-purple-200 mt-1">
+                        Registered Mobile: <span id="dashUserPhone" class="font-bold text-white">0300XXXXXXX</span> |
+                        Referral ID: <span id="dashUserRef" class="font-bold text-amber-300">TAJ-786</span>
+                    </p>
+                </div>
+
+                <div
+                    class="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20 flex items-center gap-6 w-full md:w-auto justify-between md:justify-start">
+                    <div>
+                        <span class="block text-[11px] text-purple-200 font-semibold uppercase tracking-wider">Total
+                            Balance</span>
+                        <span id="dashUserBalance" class="text-2xl sm:text-3xl font-brand font-black text-amber-300">PKR
+                            0</span>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="openTransaction('deposit')"
+                            class="px-4 py-2 rounded-xl bg-gold-gradient text-amber-950 text-xs font-bold shadow hover:brightness-105 transition">
+                            Deposit
+                        </button>
+                        <button onclick="openTransaction('withdraw')"
+                            class="px-4 py-2 rounded-xl bg-white/20 text-white text-xs font-bold border border-white/30 hover:bg-white/30 transition">
+                            Withdraw
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Investments & Ledger Grid -->
+            <div class="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-4 mt-6 pt-6 border-t border-purple-800">
+                <div class="bg-black/30 rounded-2xl p-4 border border-purple-800">
+                    <h4
+                        class="text-xs font-bold uppercase text-amber-300 tracking-wider mb-2 flex items-center justify-between">
+                        <span>Active Investment Plans</span>
+                        <button onclick="openModal('plansModal')"
+                            class="text-purple-300 hover:text-white text-[11px] font-semibold underline">Buy
+                            Plan</button>
+                    </h4>
+                    <div id="dashActivePlans" class="space-y-2 text-xs text-purple-200">
+                        <p class="italic text-purple-300/70">No active plans yet. Click 'Buy Plan' to begin earning
+                            daily returns.</p>
+                    </div>
+                </div>
+
+                <div class="bg-black/30 rounded-2xl p-4 border border-purple-800">
+                    <h4 class="text-xs font-bold uppercase text-amber-300 tracking-wider mb-2">Recent Transactions</h4>
+                    <div id="dashRecentTrans" class="space-y-2 text-xs text-purple-200 max-h-28 overflow-y-auto">
+                        <p class="italic text-purple-300/70">No transactions recorded.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <!-- Hero Section -->
         <section id="hero"
             class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center bg-white rounded-3xl p-6 sm:p-10 border border-purple-100 luxury-card-shadow overflow-hidden">
 
-            <!-- Left Column: Copy & Actions -->
             <div class="lg:col-span-6 text-center lg:text-left space-y-5 order-2 lg:order-1">
                 <div
                     class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-purple-50 border border-purple-200 text-purple-900 text-xs font-bold tracking-wide">
-                    <i class="fa-solid fa-shield-check text-amber-500"></i> Certified & Automated Platform
+                    <i class="fa-solid fa-bolt text-amber-500"></i> High-Speed Local Banking Supported
                 </div>
 
                 <h1 class="font-brand text-3xl sm:text-4xl md:text-5xl font-black text-taj-purple leading-tight">
@@ -129,16 +212,15 @@
                 </h1>
 
                 <p class="text-gray-600 text-sm sm:text-base leading-relaxed max-w-xl mx-auto lg:mx-0">
-                    Choose tailored investment plans with verified yields. Monitor capital growth, track referral
-                    earnings, and execute automated 24/7 withdrawals directly to your local account.
+                    Tailored investment solutions with verifiable daily returns. Deposit conveniently using JazzCash,
+                    Easypaisa, or direct Bank Wire, and initiate withdrawals anytime.
                 </p>
 
-                <!-- Action Buttons -->
                 <div class="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-2">
-                    <button onclick="openModal('registerModal')"
+                    <button onclick="handleHeroCTA()"
                         class="w-full sm:w-auto px-8 py-3.5 rounded-full bg-gold-gradient text-amber-950 font-brand font-black text-base shadow-lg shadow-amber-500/25 border border-amber-300 hover:brightness-105 active:scale-95 transition flex items-center justify-center gap-2.5">
                         <i class="fa-solid fa-user-plus text-amber-900"></i>
-                        <span>Create Free Account</span>
+                        <span id="heroPrimaryBtnText">Create Free Account</span>
                     </button>
 
                     <button onclick="openModal('plansModal')"
@@ -148,28 +230,25 @@
                     </button>
                 </div>
 
-                <!-- Small Trust Stats -->
                 <div class="grid grid-cols-3 gap-4 pt-4 border-t border-gray-100 max-w-md mx-auto lg:mx-0">
                     <div>
                         <div class="font-brand font-extrabold text-xl text-taj-purple">25K+</div>
-                        <div class="text-xs text-gray-500 font-medium">Active Investors</div>
+                        <div class="text-xs text-gray-500 font-medium">Active Members</div>
                     </div>
                     <div>
                         <div class="font-brand font-extrabold text-xl text-taj-purple">PKR 180M+</div>
-                        <div class="text-xs text-gray-500 font-medium">Paid Returns</div>
+                        <div class="text-xs text-gray-500 font-medium">Total Paid Out</div>
                     </div>
                     <div>
                         <div class="font-brand font-extrabold text-xl text-taj-purple">99.9%</div>
-                        <div class="text-xs text-gray-500 font-medium">Uptime Guarantee</div>
+                        <div class="text-xs text-gray-500 font-medium">Auto Execution</div>
                     </div>
                 </div>
             </div>
 
-            <!-- Right Column: Interactive Truck & Logistics Vector Graphic -->
+            <!-- Right Vector Logistics Artwork -->
             <div
                 class="lg:col-span-6 relative w-full overflow-hidden bg-black truck-header-gradient rounded-2xl border-2 border-amber-500/60 shadow-xl order-1 lg:order-2 flex items-center justify-center min-h-[240px] sm:min-h-[300px]">
-
-                <!-- City Silhouette -->
                 <div
                     class="absolute bottom-10 inset-x-0 h-20 opacity-25 flex items-end justify-around px-2 pointer-events-none">
                     <div class="w-6 h-16 bg-amber-400/40"></div>
@@ -177,10 +256,8 @@
                     <div class="w-8 h-12 bg-amber-300/40"></div>
                     <div class="w-12 h-24 bg-purple-300/40"></div>
                     <div class="w-9 h-14 bg-amber-200/40"></div>
-                    <div class="w-14 h-18 bg-purple-400/40"></div>
                 </div>
 
-                <!-- SVG Vector Truck -->
                 <div class="relative z-10 w-full max-w-[460px] p-2">
                     <svg viewBox="0 0 460 210" class="w-full h-auto filter drop-shadow-[0_12px_18px_rgba(0,0,0,0.85)]">
                         <ellipse cx="230" cy="188" rx="210" ry="12" fill="url(#roadGlow)" opacity="0.8" />
@@ -191,7 +268,7 @@
                             <stop offset="100%" stop-color="#000" stop-opacity="0" />
                         </linearGradient>
 
-                        <!-- Truck Cabin -->
+                        <!-- Truck Body -->
                         <path
                             d="M 68 180 L 175 180 L 175 62 C 175 58 170 54 165 54 L 105 54 C 88 54 75 75 70 102 L 68 180 Z"
                             fill="#131417" stroke="#d4af37" stroke-width="2.5" />
@@ -199,18 +276,16 @@
                             stroke-width="1.2" />
                         <rect x="76" y="70" width="80" height="2" fill="#ffffff" opacity="0.4" />
 
-                        <!-- Sunvisor: TAJ PROFIT -->
+                        <!-- Signage -->
                         <rect x="85" y="55" width="80" height="11" rx="2" fill="#000" stroke="#facc15"
                             stroke-width="0.7" />
                         <text x="125" y="64" font-family="'Outfit', sans-serif" font-weight="900" font-size="9"
                             fill="#facc15" text-anchor="middle" letter-spacing="1.2">TAJ PROFIT</text>
 
-                        <!-- Mercedes Emblem -->
                         <circle cx="120" cy="125" r="12" fill="#0b0b0e" stroke="#f6c344" stroke-width="2" />
                         <path d="M 120 114 L 120 125 L 111 131 M 120 125 L 129 131" stroke="#f6c344" stroke-width="2"
                             stroke-linecap="round" />
 
-                        <!-- Front Headlights -->
                         <polygon points="68,142 82,142 80,154 67,152" fill="#fef08a"
                             filter="drop-shadow(0 0 6px #facc15)" />
                         <polygon points="160,142 174,142 172,154 159,152" fill="#fef08a" />
@@ -218,13 +293,13 @@
                         <text x="121" y="150" font-size="5.5" font-family="'Outfit', sans-serif" font-weight="bold"
                             fill="#facc15" text-anchor="middle" letter-spacing="1">TAJPROFIT</text>
 
-                        <!-- Double Decker Trailer -->
+                        <!-- Double Decker Cargo -->
                         <rect x="178" y="38" width="265" height="135" rx="5" fill="#0e0f14" stroke="#eab308"
                             stroke-width="2" />
                         <rect x="180" y="40" width="261" height="131" rx="4" fill="#0a0a0f" opacity="0.95" />
                         <line x1="180" y1="105" x2="330" y2="105" stroke="#ca8a04" stroke-width="2.5" />
 
-                        <!-- Car 1: Top Left -->
+                        <!-- Cars on Trailer -->
                         <g transform="translate(186, 56) scale(0.65)">
                             <rect x="5" y="24" width="95" height="24" rx="7" fill="#f8fafc" stroke="#cbd5e1"
                                 stroke-width="1.5" />
@@ -233,7 +308,6 @@
                             <circle cx="82" cy="48" r="9" fill="#000" stroke="#94a3b8" stroke-width="3" />
                         </g>
 
-                        <!-- Car 2: Top Right -->
                         <g transform="translate(254, 56) scale(0.65)">
                             <rect x="5" y="24" width="95" height="24" rx="7" fill="#2563eb" stroke="#60a5fa"
                                 stroke-width="1.5" />
@@ -242,7 +316,6 @@
                             <circle cx="82" cy="48" r="9" fill="#000" stroke="#94a3b8" stroke-width="3" />
                         </g>
 
-                        <!-- Car 3: Bottom Left -->
                         <g transform="translate(186, 118) scale(0.65)">
                             <rect x="5" y="24" width="95" height="24" rx="7" fill="#eab308" stroke="#fef08a"
                                 stroke-width="1.5" />
@@ -251,7 +324,6 @@
                             <circle cx="82" cy="48" r="9" fill="#000" stroke="#94a3b8" stroke-width="3" />
                         </g>
 
-                        <!-- Car 4: Bottom Right -->
                         <g transform="translate(254, 118) scale(0.65)">
                             <rect x="5" y="24" width="95" height="24" rx="7" fill="#7e22ce" stroke="#c084fc"
                                 stroke-width="1.5" />
@@ -260,7 +332,7 @@
                             <circle cx="82" cy="48" r="9" fill="#000" stroke="#94a3b8" stroke-width="3" />
                         </g>
 
-                        <!-- Brand Signboard -->
+                        <!-- Brand Emblem -->
                         <g transform="translate(328, 48)">
                             <path d="M 40 16 L 48 29 L 63 21 L 58 36 L 22 36 L 17 21 L 32 29 Z" fill="#facc15"
                                 stroke="#ca8a04" stroke-width="1.2" />
@@ -283,66 +355,55 @@
                             <circle cx="404" cy="182" r="14" />
                             <circle cx="404" cy="182" r="7" fill="#facc15" stroke="#a16207" stroke-width="1.5" />
                         </g>
-
-                        <!-- Highway Lines -->
-                        <path d="M 40 198 L 440 198" stroke="#f59e0b" stroke-width="2.5" opacity="0.6"
-                            stroke-dasharray="16 8" />
                     </svg>
                 </div>
             </div>
         </section>
 
-        <!-- 4 Value Highlights Grid -->
+        <!-- Core Features -->
         <section id="features" class="space-y-4">
             <div class="text-center max-w-xl mx-auto">
-                <h2 class="text-2xl sm:text-3xl font-brand font-extrabold text-taj-purple">Core Capabilities</h2>
-                <p class="text-sm text-gray-500 mt-1">Engineered to bring transparency, stability, and speed to every
-                    trade.</p>
+                <h2 class="text-2xl sm:text-3xl font-brand font-extrabold text-taj-purple">Platform Advantages</h2>
+                <p class="text-sm text-gray-500 mt-1">Built for speed, security, and automated compounding.</p>
             </div>
 
             <div class="bg-white rounded-3xl p-6 sm:p-8 border border-purple-100 luxury-card-shadow">
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8">
-
-                    <!-- Feature 1 -->
                     <div class="flex flex-col items-center text-center group">
                         <div
                             class="w-16 h-16 badge-icon-box flex items-center justify-center mb-3 group-hover:scale-110 transition duration-300">
                             <i class="fa-solid fa-arrow-trend-up text-2xl text-purple-700"></i>
                         </div>
-                        <h3 class="font-brand font-bold text-base sm:text-lg text-taj-brandText">High Yields</h3>
-                        <p class="text-xs sm:text-sm text-gray-500 mt-1">Targeted daily return rates</p>
+                        <h3 class="font-brand font-bold text-base sm:text-lg text-taj-brandText">Daily Payouts</h3>
+                        <p class="text-xs sm:text-sm text-gray-500 mt-1">9% to 12% fixed yield</p>
                     </div>
 
-                    <!-- Feature 2 -->
                     <div class="flex flex-col items-center text-center group">
                         <div
                             class="w-16 h-16 badge-icon-box flex items-center justify-center mb-3 group-hover:scale-110 transition duration-300">
                             <i class="fa-solid fa-shield-halved text-2xl text-amber-600"></i>
                         </div>
-                        <h3 class="font-brand font-bold text-base sm:text-lg text-taj-brandText">Secured Ledger</h3>
-                        <p class="text-xs sm:text-sm text-gray-500 mt-1">Encrypted and transparent</p>
+                        <h3 class="font-brand font-bold text-base sm:text-lg text-taj-brandText">Capital Protected</h3>
+                        <p class="text-xs sm:text-sm text-gray-500 mt-1">Full principal insurance</p>
                     </div>
 
-                    <!-- Feature 3 -->
                     <div class="flex flex-col items-center text-center group">
                         <div
                             class="w-16 h-16 badge-icon-box flex items-center justify-center mb-3 group-hover:scale-110 transition duration-300">
                             <i class="fa-solid fa-users-rays text-2xl text-indigo-600"></i>
                         </div>
-                        <h3 class="font-brand font-bold text-base sm:text-lg text-taj-brandText">Active Network</h3>
-                        <p class="text-xs sm:text-sm text-gray-500 mt-1">Multi-tier affiliate rewards</p>
+                        <h3 class="font-brand font-bold text-base sm:text-lg text-taj-brandText">Referral Bonuses</h3>
+                        <p class="text-xs sm:text-sm text-gray-500 mt-1">Earn on direct team joins</p>
                     </div>
 
-                    <!-- Feature 4 -->
                     <div class="flex flex-col items-center text-center group">
                         <div
                             class="w-16 h-16 badge-icon-box flex items-center justify-center mb-3 group-hover:scale-110 transition duration-300">
                             <i class="fa-solid fa-headset text-2xl text-emerald-600"></i>
                         </div>
-                        <h3 class="font-brand font-bold text-base sm:text-lg text-taj-brandText">24/7 Desk</h3>
-                        <p class="text-xs sm:text-sm text-gray-500 mt-1">Instant priority resolution</p>
+                        <h3 class="font-brand font-bold text-base sm:text-lg text-taj-brandText">24/7 Helpline</h3>
+                        <p class="text-xs sm:text-sm text-gray-500 mt-1">Live agent assistance</p>
                     </div>
-
                 </div>
             </div>
         </section>
@@ -350,26 +411,21 @@
         <!-- Brand Partners Section -->
         <section id="partners" class="bg-white rounded-3xl p-6 sm:p-8 border border-purple-100 luxury-card-shadow">
             <div class="text-center mb-6">
-                <h3 class="font-brand font-extrabold text-2xl text-taj-purple">Global Fleet & Logistics Partners</h3>
-                <p class="text-xs sm:text-sm text-gray-500">Collaborating with industry pioneers in asset transit</p>
+                <h3 class="font-brand font-extrabold text-2xl text-taj-purple">Fleet & Logistics Partners</h3>
+                <p class="text-xs sm:text-sm text-gray-500">Backing our high-velocity transit portfolios</p>
             </div>
 
             <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3 sm:gap-4">
-                <!-- Mercedes -->
                 <div
                     class="bg-gray-50 hover:bg-white border border-gray-200/70 hover:border-purple-300 rounded-2xl p-4 flex flex-col items-center justify-center transition duration-200 hover:shadow-md">
                     <i class="fa-brands fa-monero text-2xl text-gray-800 mb-1"></i>
                     <span class="text-[11px] font-bold text-gray-700">Mercedes-Benz</span>
                 </div>
-
-                <!-- BMW -->
                 <div
                     class="bg-gray-50 hover:bg-white border border-gray-200/70 hover:border-purple-300 rounded-2xl p-4 flex flex-col items-center justify-center transition duration-200 hover:shadow-md">
                     <i class="fa-solid fa-circle-notch text-2xl text-sky-600 mb-1"></i>
                     <span class="text-[11px] font-bold text-gray-700">BMW Group</span>
                 </div>
-
-                <!-- Audi -->
                 <div
                     class="bg-gray-50 hover:bg-white border border-gray-200/70 hover:border-purple-300 rounded-2xl p-4 flex flex-col items-center justify-center transition duration-200 hover:shadow-md">
                     <div class="flex -space-x-1 mb-1">
@@ -379,36 +435,26 @@
                     </div>
                     <span class="text-[11px] font-bold text-gray-700">Audi AG</span>
                 </div>
-
-                <!-- Toyota -->
                 <div
                     class="bg-gray-50 hover:bg-white border border-gray-200/70 hover:border-purple-300 rounded-2xl p-4 flex flex-col items-center justify-center transition duration-200 hover:shadow-md">
                     <i class="fa-solid fa-circle text-2xl text-red-600 mb-1"></i>
                     <span class="text-[11px] font-bold text-gray-700">TOYOTA</span>
                 </div>
-
-                <!-- Honda -->
                 <div
                     class="bg-gray-50 hover:bg-white border border-gray-200/70 hover:border-purple-300 rounded-2xl p-4 flex flex-col items-center justify-center transition duration-200 hover:shadow-md">
                     <span class="font-serif font-black text-xl text-gray-900 leading-none mb-1">H</span>
                     <span class="text-[11px] font-bold text-gray-700">HONDA</span>
                 </div>
-
-                <!-- Land Rover -->
                 <div
                     class="bg-gray-50 hover:bg-white border border-gray-200/70 hover:border-purple-300 rounded-2xl p-4 flex flex-col items-center justify-center transition duration-200 hover:shadow-md">
                     <i class="fa-solid fa-truck-monster text-xl text-emerald-800 mb-1"></i>
                     <span class="text-[11px] font-bold text-gray-700">LAND ROVER</span>
                 </div>
-
-                <!-- Tesla -->
                 <div
                     class="bg-gray-50 hover:bg-white border border-gray-200/70 hover:border-purple-300 rounded-2xl p-4 flex flex-col items-center justify-center transition duration-200 hover:shadow-md">
                     <i class="fa-solid fa-bolt text-xl text-red-600 mb-1"></i>
                     <span class="text-[11px] font-bold text-gray-700">TESLA</span>
                 </div>
-
-                <!-- Porsche -->
                 <div
                     class="bg-gray-50 hover:bg-white border border-gray-200/70 hover:border-purple-300 rounded-2xl p-4 flex flex-col items-center justify-center transition duration-200 hover:shadow-md">
                     <i class="fa-solid fa-shield text-xl text-amber-600 mb-1"></i>
@@ -421,14 +467,12 @@
         <section id="offices" class="bg-white rounded-3xl p-6 sm:p-8 border border-purple-100 luxury-card-shadow">
             <div class="text-center mb-6">
                 <h3 class="font-brand font-extrabold text-2xl text-taj-purple">Our International Offices</h3>
-                <p class="text-xs sm:text-sm text-gray-500">Corporate hubs providing localized execution and legal
-                    adherence</p>
+                <p class="text-xs sm:text-sm text-gray-500">Corporate hubs providing localized execution</p>
             </div>
 
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
-                <!-- Pakistan -->
                 <div class="group cursor-pointer rounded-2xl overflow-hidden border border-purple-100 hover:border-amber-400 transition duration-300 shadow-sm hover:shadow-md"
-                    onclick="showOfficeInfo('Pakistan Office', 'Islamabad HQ, Blue Area Corporate Center, Islamabad, Pakistan')">
+                    onclick="showOfficeInfo('Pakistan Office', 'Islamabad HQ, Blue Area Corporate Tower, Pakistan')">
                     <div class="aspect-[4/3] w-full overflow-hidden relative">
                         <img src="https://images.unsplash.com/photo-1589308078059-be1415eab4c3?w=500&auto=format&fit=crop&q=80"
                             alt="Pakistan Office"
@@ -441,9 +485,8 @@
                     </div>
                 </div>
 
-                <!-- Dubai -->
                 <div class="group cursor-pointer rounded-2xl overflow-hidden border border-purple-100 hover:border-amber-400 transition duration-300 shadow-sm hover:shadow-md"
-                    onclick="showOfficeInfo('Dubai Office', 'Sheikh Zayed Road, Downtown Financial Center, Dubai, UAE')">
+                    onclick="showOfficeInfo('Dubai Office', 'Sheikh Zayed Road, Downtown Financial Center, Dubai')">
                     <div class="aspect-[4/3] w-full overflow-hidden relative">
                         <img src="https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=500&auto=format&fit=crop&q=80"
                             alt="Dubai Office"
@@ -455,7 +498,6 @@
                     </div>
                 </div>
 
-                <!-- Turkey -->
                 <div class="group cursor-pointer rounded-2xl overflow-hidden border border-purple-100 hover:border-amber-400 transition duration-300 shadow-sm hover:shadow-md"
                     onclick="showOfficeInfo('Turkey Office', 'Levent Commercial District, Istanbul, Turkey')">
                     <div class="aspect-[4/3] w-full overflow-hidden relative">
@@ -469,9 +511,8 @@
                     </div>
                 </div>
 
-                <!-- United Kingdom -->
                 <div class="group cursor-pointer rounded-2xl overflow-hidden border border-purple-100 hover:border-amber-400 transition duration-300 shadow-sm hover:shadow-md"
-                    onclick="showOfficeInfo('United Kingdom Office', 'Canary Wharf Financial Square, London, United Kingdom')">
+                    onclick="showOfficeInfo('UK Office', 'Canary Wharf Financial Square, London, United Kingdom')">
                     <div class="aspect-[4/3] w-full overflow-hidden relative">
                         <img src="https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=500&auto=format&fit=crop&q=80"
                             alt="UK Office"
@@ -486,40 +527,9 @@
             </div>
         </section>
 
-        <!-- Cosmic Network Banner -->
-        <section
-            class="relative rounded-3xl overflow-hidden bg-black border-2 border-amber-500/80 shadow-2xl p-6 sm:p-12 text-white">
-            <div class="absolute inset-0 pointer-events-none"
-                style="background: radial-gradient(circle at 80% 50%, #581c87 0%, #1e0538 45%, #030008 95%);"></div>
-
-            <div class="relative z-10 max-w-2xl space-y-4">
-                <div class="flex items-center gap-2">
-                    <span
-                        class="px-3 py-1 rounded-full bg-amber-400/20 text-amber-300 text-xs font-bold border border-amber-400/40">GLOBAL
-                        MEMBERSHIP</span>
-                </div>
-
-                <h3 class="font-brand font-black text-2xl sm:text-4xl text-amber-300">
-                    Step Into the Future of Autonomous Yield Generation
-                </h3>
-
-                <p class="text-sm sm:text-base text-gray-300 leading-relaxed">
-                    Over 50,000 global transactions completed without interruption. Experience enterprise-grade
-                    portfolio acceleration today.
-                </p>
-
-                <div class="pt-2">
-                    <button onclick="openModal('registerModal')"
-                        class="px-8 py-3.5 rounded-full bg-gradient-to-r from-purple-800 via-purple-700 to-purple-800 border border-amber-400 text-white font-brand font-black text-sm tracking-wide shadow-lg hover:brightness-110 active:scale-95 transition">
-                        Join TajProfit Now &rarr;
-                    </button>
-                </div>
-            </div>
-        </section>
-
     </main>
 
-    <!-- Mobile Bottom Navigation Bar (Hidden on Tablets & Desktops) -->
+    <!-- Mobile Bottom Navigation Bar (Smart Auth Aware) -->
     <nav
         class="md:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-md border-t border-purple-100 shadow-[0_-4px_20px_rgba(88,28,135,0.08)] px-3 py-2 flex items-center justify-around">
         <button onclick="switchTab('home')" id="tab-home"
@@ -528,28 +538,28 @@
             <span>Home</span>
         </button>
 
-        <button onclick="switchTab('plans')" id="tab-plans"
+        <button onclick="openModal('plansModal')" id="tab-plans"
             class="flex flex-col items-center justify-center py-1 px-3 rounded-2xl text-gray-500 hover:text-taj-purple text-xs transition">
             <i class="fa-solid fa-layer-group text-lg mb-0.5"></i>
             <span>Plans</span>
         </button>
 
-        <button onclick="switchTab('deposit')" id="tab-deposit"
+        <button onclick="openTransaction('deposit')" id="tab-deposit"
             class="flex flex-col items-center justify-center py-1 px-3 rounded-2xl text-gray-500 hover:text-taj-purple text-xs transition">
             <i class="fa-regular fa-square-plus text-lg mb-0.5"></i>
             <span>Deposit</span>
         </button>
 
-        <button onclick="switchTab('withdraw')" id="tab-withdraw"
+        <button onclick="openTransaction('withdraw')" id="tab-withdraw"
             class="flex flex-col items-center justify-center py-1 px-3 rounded-2xl text-gray-500 hover:text-taj-purple text-xs transition">
             <i class="fa-solid fa-wallet text-lg mb-0.5"></i>
             <span>Withdraw</span>
         </button>
 
-        <button onclick="openModal('loginModal')" id="tab-login"
+        <button onclick="handleMobileAuthBtn()" id="tab-login"
             class="flex flex-col items-center justify-center py-1 px-3 rounded-2xl text-gray-500 hover:text-taj-purple text-xs transition">
-            <i class="fa-solid fa-arrow-right-to-bracket text-lg mb-0.5"></i>
-            <span>Login</span>
+            <i id="mobileAuthIcon" class="fa-solid fa-arrow-right-to-bracket text-lg mb-0.5"></i>
+            <span id="mobileAuthLabel">Login</span>
         </button>
     </nav>
 
@@ -571,28 +581,28 @@
                 <p class="text-xs text-gray-500 mt-1">Start generating consistent daily returns</p>
             </div>
 
-            <form id="regForm" onsubmit="handleAuth(event, 'register')" class="space-y-4">
+            <form id="regForm" onsubmit="handleRegister(event)" class="space-y-4">
                 <div>
                     <label class="block text-xs font-bold text-gray-700 mb-1">Full Name</label>
-                    <input type="text" required placeholder="John Doe"
+                    <input id="regName" type="text" required placeholder="Enter You Full Name"
                         class="w-full px-4 py-2.5 rounded-xl border border-purple-200 text-sm focus:ring-2 focus:ring-amber-400 focus:outline-none" />
                 </div>
 
                 <div>
                     <label class="block text-xs font-bold text-gray-700 mb-1">Mobile / WhatsApp Number</label>
-                    <input type="tel" required placeholder="03001234567"
+                    <input id="regPhone" type="tel" required placeholder="03001234567"
                         class="w-full px-4 py-2.5 rounded-xl border border-purple-200 text-sm focus:ring-2 focus:ring-amber-400 focus:outline-none" />
                 </div>
 
                 <div>
                     <label class="block text-xs font-bold text-gray-700 mb-1">Password</label>
-                    <input type="password" required placeholder="••••••••"
+                    <input id="regPass" type="password" required placeholder="••••••••" minlength="6"
                         class="w-full px-4 py-2.5 rounded-xl border border-purple-200 text-sm focus:ring-2 focus:ring-amber-400 focus:outline-none" />
                 </div>
 
                 <div>
                     <label class="block text-xs font-bold text-gray-700 mb-1">Referral Code (Optional)</label>
-                    <input type="text" value="TAJ-786"
+                    <input id="regRef" type="text" value="TAJ-098"
                         class="w-full px-4 py-2.5 rounded-xl border border-purple-100 bg-purple-50/50 text-sm font-brand font-bold text-purple-900 focus:outline-none" />
                 </div>
 
@@ -601,6 +611,10 @@
                     Complete Registration
                 </button>
             </form>
+            <p class="text-center text-xs text-gray-500 mt-4">
+                Already registered? <a href="#" onclick="closeModal('registerModal'); openModal('loginModal')"
+                    class="text-purple-700 font-bold hover:underline">Log in here</a>
+            </p>
         </div>
     </div>
 
@@ -618,36 +632,41 @@
                     <i class="fa-solid fa-lock text-2xl"></i>
                 </div>
                 <h3 class="font-brand font-black text-2xl text-taj-purple">Investor Login</h3>
-                <p class="text-xs text-gray-500 mt-1">Access your verified portfolio</p>
+                <p class="text-xs text-gray-500 mt-1">Access your portfolio dashboard</p>
             </div>
 
-            <form onsubmit="handleAuth(event, 'login')" class="space-y-4">
+            <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4">
                 <div>
-                    <label class="block text-xs font-bold text-gray-700 mb-1">Mobile Number or Email</label>
-                    <input type="text" required placeholder="03001234567"
+                    <label class="block text-xs font-bold text-gray-700 mb-1">Mobile Number</label>
+                    <input id="loginPhone" type="text" required placeholder="03001234567"
                         class="w-full px-4 py-2.5 rounded-xl border border-purple-200 text-sm focus:ring-2 focus:ring-purple-400 focus:outline-none" />
                 </div>
 
                 <div>
                     <label class="block text-xs font-bold text-gray-700 mb-1">Password</label>
-                    <input type="password" required placeholder="••••••••"
+                    <input id="loginPass" type="password" required placeholder="••••••••"
                         class="w-full px-4 py-2.5 rounded-xl border border-purple-200 text-sm focus:ring-2 focus:ring-purple-400 focus:outline-none" />
                 </div>
 
                 <div class="flex items-center justify-between text-xs pt-1">
                     <label class="flex items-center gap-2 cursor-pointer">
-                        <input type="checkbox" checked class="rounded text-purple-700 focus:ring-purple-500" />
-                        <span class="text-gray-600">Remember Me</span>
+                        <input type="checkbox" id="rememberMe" checked
+                            class="rounded text-purple-700 focus:ring-purple-500" />
+                        <span class="text-gray-600">Keep me logged in</span>
                     </label>
-                    <a href="#" onclick="showCustomNotice('Contact TajProfit support desk for credential recovery.')"
+                    <a href="#" onclick="showCustomNotice('Contact customer support for password recovery.')"
                         class="text-purple-700 hover:underline font-semibold">Forgot Password?</a>
                 </div>
 
                 <button type="submit"
                     class="w-full py-3.5 rounded-full bg-purple-gradient text-white font-brand font-black shadow-md hover:brightness-105 active:scale-95 transition text-sm">
-                    Authenticate
+                    Login
                 </button>
             </form>
+            <p class="text-center text-xs text-gray-500 mt-4">
+                Don't have an account? <a href="#" onclick="closeModal('loginModal'); openModal('registerModal')"
+                    class="text-amber-600 font-bold hover:underline">Register now</a>
+            </p>
         </div>
     </div>
 
@@ -684,9 +703,9 @@
                             <li><i class="fa-solid fa-check text-emerald-600 mr-1.5"></i> Auto Withdrawals</li>
                         </ul>
                     </div>
-                    <button onclick="selectPlan('Silver Plan', '5,000')"
+                    <button onclick="executeBuyPlan('Silver Plan', 5000, 450, 30)"
                         class="w-full py-2 rounded-xl bg-gold-gradient text-amber-950 font-bold text-xs shadow-sm hover:brightness-105 active:scale-95 transition">
-                        Select Silver
+                        Subscribe Plan
                     </button>
                 </div>
 
@@ -707,12 +726,12 @@
                                     class="text-emerald-700">PKR 1,500 (10%)</strong></li>
                             <li><i class="fa-solid fa-check text-emerald-600 mr-1.5"></i> Cycle: <strong>30
                                     Days</strong></li>
-                            <li><i class="fa-solid fa-check text-emerald-600 mr-1.5"></i> Priority VIP Queue</li>
+                            <li><i class="fa-solid fa-check text-emerald-600 mr-1.5"></i> VIP Support Priority</li>
                         </ul>
                     </div>
-                    <button onclick="selectPlan('Gold Taj Plan', '15,000')"
+                    <button onclick="executeBuyPlan('Gold Taj Plan', 15000, 1500, 30)"
                         class="w-full py-2 rounded-xl bg-purple-gradient text-white font-bold text-xs shadow-sm hover:brightness-105 active:scale-95 transition">
-                        Select Gold
+                        Subscribe Plan
                     </button>
                 </div>
 
@@ -733,9 +752,9 @@
                             <li><i class="fa-solid fa-check text-emerald-600 mr-1.5"></i> Principal Insured</li>
                         </ul>
                     </div>
-                    <button onclick="selectPlan('Diamond Plan', '50,000')"
+                    <button onclick="executeBuyPlan('Diamond Plan', 50000, 6000, 45)"
                         class="w-full py-2 rounded-xl bg-emerald-600 text-white font-bold text-xs shadow-sm hover:bg-emerald-700 active:scale-95 transition">
-                        Select Diamond
+                        Subscribe Plan
                     </button>
                 </div>
 
@@ -743,7 +762,7 @@
         </div>
     </div>
 
-    <!-- MODAL: DEPOSIT & WITHDRAW -->
+    <!-- MODAL: REAL WORKING DEPOSIT & WITHDRAW -->
     <div id="transModal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm hidden items-center justify-center p-4">
         <div
             class="bg-white w-full max-w-md rounded-3xl p-6 sm:p-8 border-2 border-purple-400 shadow-2xl relative text-left">
@@ -781,14 +800,14 @@
 
                 <div>
                     <label class="block text-xs font-bold text-gray-700 mb-1">Amount (PKR)</label>
-                    <input type="number" min="1000" step="500" required placeholder="Minimum 1,000"
+                    <input id="transAmount" type="number" min="500" step="100" required placeholder="Minimum 500"
                         class="w-full px-4 py-2.5 rounded-xl border border-purple-200 text-sm focus:ring-2 focus:ring-purple-400 focus:outline-none" />
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-gray-700 mb-1">Account Number / Transaction ID
-                        (TID)</label>
-                    <input type="text" required placeholder="03XXXXXXXXX or TID Reference"
+                    <label id="transAccountLabel" class="block text-xs font-bold text-gray-700 mb-1">Transaction ID /
+                        Sender Account</label>
+                    <input id="transRef" type="text" required placeholder="TID Code or Mobile Account"
                         class="w-full px-4 py-2.5 rounded-xl border border-purple-200 text-sm focus:ring-2 focus:ring-purple-400 focus:outline-none" />
                 </div>
 
@@ -800,7 +819,7 @@
         </div>
     </div>
 
-    <!-- GLOBAL TOAST NOTIFICATION -->
+    <!-- TOAST NOTIFICATION -->
     <div id="toastBox"
         class="fixed top-5 right-5 z-50 bg-purple-950 text-white px-5 py-3.5 rounded-2xl shadow-2xl border border-amber-400 flex items-center gap-3 transform translate-y-[-150%] opacity-0 transition-all duration-300 pointer-events-none max-w-sm">
         <div class="w-8 h-8 rounded-full bg-amber-400/20 text-amber-300 flex items-center justify-center shrink-0">
@@ -811,7 +830,7 @@
         </div>
     </div>
 
-    <!-- External JavaScript -->
+    <!-- External Script -->
     <script src="script.js"></script>
 </body>
 
