@@ -1,6 +1,6 @@
 @charset "UTF-8";
 
-/* Custom Gradients */
+/* Custom Brand Gradients */
 .bg-gold-gradient {
     background: linear-gradient(135deg, #f6c344 0%, #e6a838 50%, #d99726 100%);
 }
@@ -26,10 +26,11 @@
     box-shadow: 0 4px 12px rgba(55, 18, 94, 0.04);
 }
 
-/* Gold Text Effect */
+/* Gold Gradient Heading Fix (No CSS warnings) */
 .gold-emboss-text {
     background: linear-gradient(180deg, #d99726 0%, #99630c 100%);
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
 }
 
