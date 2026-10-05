@@ -1,0 +1,53 @@
+@charset "UTF-8";
+
+/* Custom Gradients */
+.bg-gold-gradient {
+    background: linear-gradient(135deg, #f6c344 0%, #e6a838 50%, #d99726 100%);
+}
+
+.bg-purple-gradient {
+    background: linear-gradient(135deg, #4a157d 0%, #37125e 60%, #21083e 100%);
+}
+
+.truck-header-gradient {
+    background: radial-gradient(circle at 50% 120%, #4a157d 0%, #17042a 50%, #05000a 100%);
+}
+
+/* Luxury Soft Shadows */
+.luxury-card-shadow {
+    box-shadow: 0 10px 30px -5px rgba(55, 18, 94, 0.06), 0 4px 10px -2px rgba(55, 18, 94, 0.03);
+}
+
+/* Badge Icon Container */
+.badge-icon-box {
+    background: linear-gradient(135deg, #fcfaff 0%, #f1e9fe 100%);
+    border: 1px solid rgba(217, 151, 38, 0.25);
+    border-radius: 1.25rem;
+    box-shadow: 0 4px 12px rgba(55, 18, 94, 0.04);
+}
+
+/* Gold Text Effect */
+.gold-emboss-text {
+    background: linear-gradient(180deg, #d99726 0%, #99630c 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #d1c4e9;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #99630c;
+}
