@@ -1,465 +1,972 @@
-/**
- * TajProfit Web Application - Complete Real Working Engine
- */
+"use strict";
 
-// ==========================================
-// 1. DATABASE & SESSION MANAGEMENT ENGINE
-// ==========================================
+/* ================================
+   TAJPROFIT DEMO - SCRIPT.JS
+   Educational / Frontend Demo Only
+================================ */
 
-function getUsersDB() {
-    return JSON.parse(localStorage.getItem('tajprofit_users') || '[]');
-}
+let CurrentUser = null;
+let CurrentTransactionType = "deposit";
 
-function saveUsersDB(users) {
-    localStorage.setItem('tajprofit_users', JSON.stringify(users));
-}
+const UsersKey = "TajProfitDemoUsers";
+const SessionKey = "TajProfitDemoSession";
 
-// Check both permanent and temporary storage
-function getActiveSession() {
-    const local = localStorage.getItem('tajprofit_session');
-    if (local) return JSON.parse(local);
+/* ================================
+   Storage
+================================ */
 
-    const session = sessionStorage.getItem('tajprofit_session');
-    if (session) return JSON.parse(session);
-
-    return null;
-}
-
-function setActiveSession(user, remember = true) {
-    if (remember) {
-        localStorage.setItem('tajprofit_session', JSON.stringify(user));
-        sessionStorage.removeItem('tajprofit_session');
-    } else {
-        sessionStorage.setItem('tajprofit_session', JSON.stringify(user));
-        localStorage.removeItem('tajprofit_session');
+function GetUsers() {
+    try {
+        return JSON.parse(localStorage.getItem(UsersKey)) || [];
+    } catch (error) {
+        return [];
     }
-    syncUserInDB(user);
-    renderAppInterface();
 }
 
-function clearActiveSession() {
-    localStorage.removeItem('tajprofit_session');
-    sessionStorage.removeItem('tajprofit_session');
-    renderAppInterface();
+function SaveUsers(users) {
+    localStorage.setItem(UsersKey, JSON.stringify(users));
 }
 
-function syncUserInDB(user) {
-    const users = getUsersDB();
-    const index = users.findIndex(u => u.id === user.id);
+function GetCurrentUser() {
+    const sessionPhone = localStorage.getItem(SessionKey);
+
+    if (!sessionPhone) {
+        return null;
+    }
+
+    const users = GetUsers();
+
+    return users.find(user => user.phone === sessionPhone) || null;
+}
+
+function SaveCurrentUser(user) {
+    const users = GetUsers();
+
+    const index = users.findIndex(item => item.phone === user.phone);
+
     if (index !== -1) {
         users[index] = user;
     } else {
         users.push(user);
     }
-    saveUsersDB(users);
+
+    SaveUsers(users);
+
+    CurrentUser = user;
 }
 
-// ==========================================
-// 2. MODALS & TOAST NOTIFICATION HELPERS
-// ==========================================
+/* ================================
+   Modal
+================================ */
 
-function openModal(id) {
-    const modal = document.getElementById(id);
-    if (modal) {
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
-        document.body.style.overflow = 'hidden';
+function openModal(modalId) {
+    const modal = document.getElementById(modalId);
+
+    if (!modal) {
+        return;
+    }
+
+    modal.classList.remove("hidden");
+    modal.classList.add("flex");
+
+    document.body.classList.add("overflow-hidden");
+}
+
+function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+
+    if (!modal) {
+        return;
+    }
+
+    modal.classList.add("hidden");
+    modal.classList.remove("flex");
+
+    const openedModals = document.querySelectorAll(".fixed.inset-0.flex");
+
+    if (openedModals.length === 0) {
+        document.body.classList.remove("overflow-hidden");
     }
 }
 
-function closeModal(id) {
-    const modal = document.getElementById(id);
-    if (modal) {
-        modal.classList.add('hidden');
-        modal.classList.remove('flex');
-        document.body.style.overflow = '';
+/* ================================
+   Toast
+================================ */
+
+function ShowToast(message, type = "success") {
+    const toast = document.getElementById("toastBox");
+    const messageElement = document.getElementById("toastMessage");
+    const iconElement = document.getElementById("toastIcon");
+
+    if (!toast || !messageElement || !iconElement) {
+        alert(message);
+        return;
     }
+
+    messageElement.textContent = message;
+
+    if (type === "error") {
+        iconElement.className = "fa-solid fa-xmark text-base";
+    } else {
+        iconElement.className = "fa-solid fa-check text-base";
+    }
+
+    toast.classList.remove(
+        "translate-y-[-150%]",
+        "opacity-0"
+    );
+
+    toast.classList.add(
+        "translate-y-0",
+        "opacity-100"
+    );
+
+    setTimeout(() => {
+        toast.classList.remove(
+            "translate-y-0",
+            "opacity-100"
+        );
+
+        toast.classList.add(
+            "translate-y-[-150%]",
+            "opacity-0"
+        );
+    }, 3000);
 }
 
-window.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') {
-        ['registerModal', 'loginModal', 'plansModal', 'transModal'].forEach(closeModal);
-    }
-});
-
-['registerModal', 'loginModal', 'plansModal', 'transModal'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) {
-        el.addEventListener('click', (e) => {
-            if (e.target === el) closeModal(id);
-        });
-    }
-});
-
-let toastTimeout;
-function showToast(message, isSuccess = true) {
-    const toast = document.getElementById('toastBox');
-    const msg = document.getElementById('toastMessage');
-    const icon = document.getElementById('toastIcon');
-
-    if (!toast || !msg || !icon) return;
-
-    clearTimeout(toastTimeout);
-    msg.innerText = message;
-    icon.className = isSuccess 
-        ? 'fa-solid fa-check text-emerald-400' 
-        : 'fa-solid fa-triangle-exclamation text-rose-400';
-
-    toast.classList.remove('translate-y-[-150%]', 'opacity-0');
-    toast.classList.add('translate-y-0', 'opacity-100');
-
-    toastTimeout = setTimeout(() => {
-        toast.classList.remove('translate-y-0', 'opacity-100');
-        toast.classList.add('translate-y-[-150%]', 'opacity-0');
-    }, 3800);
-}
-
-function showCustomNotice(notice) {
-    showToast(notice, false);
-}
-
-// ==========================================
-// 3. REAL AUTHENTICATION (SIGN UP & LOGIN)
-// ==========================================
+/* ================================
+   Register
+================================ */
 
 function handleRegister(event) {
     event.preventDefault();
 
-    const name = document.getElementById('regName').value.trim();
-    const phone = document.getElementById('regPhone').value.trim();
-    const password = document.getElementById('regPass').value;
-    const referral = document.getElementById('regRef').value.trim();
+    const name = document.getElementById("regName");
+    const phone = document.getElementById("regPhone");
+    const password = document.getElementById("regPass");
+    const referral = document.getElementById("regRef");
 
-    if (phone.length < 10) {
-        showToast('Please enter a valid mobile number (min 10 digits)', false);
+    if (!name || !phone || !password) {
         return;
     }
 
-    const users = getUsersDB();
-    const exists = users.find(u => u.phone === phone);
+    const UserName = name.value.trim();
+    const UserPhone = phone.value.trim();
+    const UserPassword = password.value;
+    const ReferralCode = referral
+        ? referral.value.trim()
+        : "TAJ-786";
 
-    if (exists) {
-        showToast('An account with this phone already exists!', false);
+    if (UserName.length < 3) {
+        ShowToast("Username must contain at least 3 characters.", "error");
         return;
     }
 
-    const newUser = {
-        id: 'USER-' + Date.now(),
-        name: name,
-        phone: phone,
-        password: password,
-        referral: referral || 'TAJ-786',
-        balance: 1000, // 1000 PKR Welcome Bonus
-        investments: [],
-        transactions: [
-            {
-                id: 'TXN-' + Math.floor(100000 + Math.random() * 900000),
-                type: 'Bonus',
-                amount: 1000,
-                method: 'Welcome Credit',
-                date: new Date().toLocaleDateString(),
-                status: 'Completed'
-            }
-        ],
+    if (UserPhone.length < 10) {
+        ShowToast("Please enter a valid mobile number.", "error");
+        return;
+    }
+
+    if (UserPassword.length < 6) {
+        ShowToast("Password must contain at least 6 characters.", "error");
+        return;
+    }
+
+    const users = GetUsers();
+
+    const ExistingUser = users.find(
+        user => user.phone === UserPhone
+    );
+
+    if (ExistingUser) {
+        ShowToast("This mobile number is already registered.", "error");
+        return;
+    }
+
+    const NewUser = {
+        id: Date.now(),
+        name: UserName,
+        phone: UserPhone,
+        password: UserPassword,
+        referralCode: GenerateReferralCode(),
+        referredBy: ReferralCode,
+        balance: 0,
+        plans: [],
+        transactions: [],
         createdAt: new Date().toISOString()
     };
 
-    users.push(newUser);
-    saveUsersDB(users);
+    users.push(NewUser);
 
-    // Auto-login and persist
-    setActiveSession(newUser, true);
-    closeModal('registerModal');
-    document.getElementById('regForm').reset();
-    showToast(`Welcome ${name}! Your account has been credited with PKR 1,000 welcome bonus.`);
+    SaveUsers(users);
+
+    localStorage.setItem(SessionKey, UserPhone);
+
+    CurrentUser = NewUser;
+
+    closeModal("registerModal");
+
+    document.getElementById("regForm").reset();
+
+    UpdateDashboard();
+
+    ShowToast("Account created successfully.");
 }
+
+/* ================================
+   Login
+================================ */
 
 function handleLogin(event) {
     event.preventDefault();
 
-    const phone = document.getElementById('loginPhone').value.trim();
-    const password = document.getElementById('loginPass').value;
-    const rememberMe = document.getElementById('rememberMe').checked;
+    const loginInput = document.getElementById("loginPhone");
+    const passwordInput = document.getElementById("loginPass");
 
-    const users = getUsersDB();
-    const user = users.find(u => u.phone === phone && u.password === password);
+    if (!loginInput || !passwordInput) {
+        return;
+    }
+
+    const loginValue = loginInput.value.trim();
+    const password = passwordInput.value;
+
+    const users = GetUsers();
+
+    const user = users.find(item =>
+        (item.phone === loginValue ||
+            item.name.toLowerCase() === loginValue.toLowerCase()) &&
+        item.password === password
+    );
 
     if (!user) {
-        showToast('Incorrect mobile number or password!', false);
+        ShowToast("Invalid username/mobile or password.", "error");
         return;
     }
 
-    setActiveSession(user, rememberMe);
-    closeModal('loginModal');
-    document.getElementById('loginForm').reset();
-    showToast(`Welcome back, ${user.name}!`);
+    CurrentUser = user;
+
+    const remember = document.getElementById("rememberMe");
+
+    if (remember && remember.checked) {
+        localStorage.setItem(SessionKey, user.phone);
+    }
+
+    closeModal("loginModal");
+
+    document.getElementById("loginForm").reset();
+
+    UpdateDashboard();
+
+    ShowToast("Login successful.");
 }
+
+/* ================================
+   Logout
+================================ */
 
 function handleLogout() {
-    clearActiveSession();
-    showToast('You have been logged out safely.');
+    localStorage.removeItem(SessionKey);
+
+    CurrentUser = null;
+
+    UpdateDashboard();
+
+    ShowToast("You have been logged out.");
 }
+
+/* ================================
+   Dashboard
+================================ */
+
+function UpdateDashboard() {
+    const user = CurrentUser || GetCurrentUser();
+
+    CurrentUser = user;
+
+    const dashboard = document.getElementById("userDashboardCard");
+    const desktopAuth = document.getElementById("authActionsDesktop");
+    const desktopProfile = document.getElementById("userProfileDesktop");
+
+    if (!user) {
+        if (dashboard) {
+            dashboard.classList.add("hidden");
+        }
+
+        if (desktopAuth) {
+            desktopAuth.classList.remove("hidden");
+        }
+
+        if (desktopProfile) {
+            desktopProfile.classList.add("hidden");
+            desktopProfile.classList.remove("flex");
+        }
+
+        return;
+    }
+
+    if (dashboard) {
+        dashboard.classList.remove("hidden");
+    }
+
+    if (desktopAuth) {
+        desktopAuth.classList.add("hidden");
+    }
+
+    if (desktopProfile) {
+        desktopProfile.classList.remove("hidden");
+        desktopProfile.classList.add("flex");
+    }
+
+    SetText("userNameDisplay", user.name);
+    SetText("dashUserName", user.name);
+    SetText("dashUserPhone", user.phone);
+
+    SetText(
+        "userBalanceDisplay",
+        `PKR ${Number(user.balance || 0).toLocaleString()}`
+    );
+
+    SetText(
+        "dashUserBalance",
+        `PKR ${Number(user.balance || 0).toLocaleString()}`
+    );
+
+    SetText(
+        "dashUserRef",
+        user.referralCode
+    );
+
+    SetText(
+        "refCodeBadge",
+        user.referralCode
+    );
+
+    const referralInput = document.getElementById("refLinkInput");
+
+    if (referralInput) {
+        referralInput.value =
+            `${window.location.origin}${window.location.pathname}?ref=${encodeURIComponent(user.referralCode)}`;
+    }
+
+    RenderPlans();
+    RenderTransactions();
+}
+
+/* ================================
+   Helper
+================================ */
+
+function SetText(id, value) {
+    const element = document.getElementById(id);
+
+    if (element) {
+        element.textContent = value;
+    }
+}
+
+function GenerateReferralCode() {
+    return "TAJ-" +
+        Math.floor(100000 + Math.random() * 900000);
+}
+
+/* ================================
+   Password
+================================ */
+
+function toggleRegPassword() {
+    const input = document.getElementById("regPass");
+    const icon = document.getElementById("regPassEye");
+
+    if (!input || !icon) {
+        return;
+    }
+
+    if (input.type === "password") {
+        input.type = "text";
+        icon.className = "fa-regular fa-eye-slash text-base";
+    } else {
+        input.type = "password";
+        icon.className = "fa-regular fa-eye text-base";
+    }
+}
+
+function toggleLoginPassword() {
+    const input = document.getElementById("loginPass");
+    const icon = document.getElementById("loginPassEye");
+
+    if (!input || !icon) {
+        return;
+    }
+
+    if (input.type === "password") {
+        input.type = "text";
+        icon.className = "fa-regular fa-eye-slash text-base";
+    } else {
+        input.type = "password";
+        icon.className = "fa-regular fa-eye text-base";
+    }
+}
+
+/* ================================
+   Hero Button
+================================ */
 
 function handleHeroCTA() {
-    const session = getActiveSession();
-    if (session) {
-        openTransaction('deposit');
-    } else {
-        openModal('registerModal');
+    if (CurrentUser) {
+        document.getElementById("userDashboardCard")
+            ?.scrollIntoView({
+                behavior: "smooth"
+            });
+
+        return;
     }
+
+    openModal("registerModal");
 }
+
+/* ================================
+   Mobile Auth
+================================ */
 
 function handleMobileAuthBtn() {
-    const session = getActiveSession();
-    if (session) {
+    if (CurrentUser) {
         handleLogout();
-    } else {
-        openModal('loginModal');
+        return;
     }
+
+    openModal("loginModal");
 }
 
-// ==========================================
-// 4. WALLET, DEPOSIT, WITHDRAW & INVESTMENTS
-// ==========================================
+/* ================================
+   Plans
+================================ */
 
-let currentTransType = 'deposit';
+function executeBuyPlan(planName, amount, dailyReturn, days) {
+    if (!CurrentUser) {
+        closeModal("plansModal");
+        openModal("loginModal");
+
+        ShowToast(
+            "Please login before selecting a demo plan.",
+            "error"
+        );
+
+        return;
+    }
+
+    const ConfirmPlan = confirm(
+        `Demo plan selected:\n\n` +
+        `${planName}\n` +
+        `Amount: PKR ${amount.toLocaleString()}\n` +
+        `Daily example: PKR ${dailyReturn.toLocaleString()}\n` +
+        `Duration: ${days} days\n\n` +
+        `This is a frontend demo. No real money will be charged.`
+    );
+
+    if (!ConfirmPlan) {
+        return;
+    }
+
+    const plan = {
+        id: Date.now(),
+        name: planName,
+        amount: amount,
+        dailyReturn: dailyReturn,
+        days: days,
+        createdAt: new Date().toISOString(),
+        status: "Demo"
+    };
+
+    CurrentUser.plans.push(plan);
+
+    SaveCurrentUser(CurrentUser);
+
+    closeModal("plansModal");
+
+    UpdateDashboard();
+
+    ShowToast(`${planName} added to your demo dashboard.`);
+}
+
+/* ================================
+   Render Plans
+================================ */
+
+function RenderPlans() {
+    const container = document.getElementById("dashActivePlans");
+
+    if (!container || !CurrentUser) {
+        return;
+    }
+
+    if (!CurrentUser.plans || CurrentUser.plans.length === 0) {
+        container.innerHTML = `
+            <p class="italic text-purple-300/70">
+                No demo plans selected yet.
+            </p>
+        `;
+
+        return;
+    }
+
+    container.innerHTML = CurrentUser.plans
+        .slice()
+        .reverse()
+        .map(plan => `
+            <div class="bg-purple-900/60 rounded-xl p-3 border border-purple-700">
+                <div class="flex items-center justify-between gap-3">
+                    <div>
+                        <strong class="text-white">
+                            ${EscapeHtml(plan.name)}
+                        </strong>
+                        <div class="text-[11px] text-purple-300">
+                            PKR ${Number(plan.amount).toLocaleString()}
+                            · ${plan.days} Days
+                        </div>
+                    </div>
+
+                    <span class="text-[10px] px-2 py-1 rounded-full bg-amber-400/20 text-amber-300">
+                        DEMO
+                    </span>
+                </div>
+            </div>
+        `)
+        .join("");
+}
+
+/* ================================
+   Transactions
+================================ */
 
 function openTransaction(type) {
-    const session = getActiveSession();
-    if (!session) {
-        showToast('Please log in first to manage your wallet.', false);
-        openModal('loginModal');
+    if (!CurrentUser) {
+        openModal("loginModal");
+
+        ShowToast(
+            "Please login first.",
+            "error"
+        );
+
         return;
     }
 
-    currentTransType = type;
-    const title = document.getElementById('transTitle');
-    const subtitle = document.getElementById('transSubtitle');
-    const label = document.getElementById('transAccountLabel');
-    const btn = document.getElementById('transBtn');
+    CurrentTransactionType = type;
 
-    if (type === 'deposit') {
-        title.innerText = 'Fund Wallet (Deposit)';
-        subtitle.innerText = 'Transfer to TajProfit official account & enter transaction details';
-        label.innerText = 'Sender Account / TID Reference';
-        btn.innerText = 'Confirm Deposit';
+    const title = document.getElementById("transTitle");
+    const subtitle = document.getElementById("transSubtitle");
+    const button = document.getElementById("transBtn");
+
+    if (type === "withdraw") {
+        if (title) {
+            title.textContent = "Demo Withdrawal";
+        }
+
+        if (subtitle) {
+            subtitle.textContent =
+                "Frontend demonstration only. No real withdrawal is processed.";
+        }
+
+        if (button) {
+            button.textContent = "Submit Demo Request";
+        }
     } else {
-        title.innerText = 'Request Withdrawal';
-        subtitle.innerText = `Available for withdrawal: PKR ${session.balance.toLocaleString()}`;
-        label.innerText = 'Your JazzCash / Easypaisa / Bank Account Number';
-        btn.innerText = 'Confirm Withdrawal';
+        if (title) {
+            title.textContent = "Demo Deposit";
+        }
+
+        if (subtitle) {
+            subtitle.textContent =
+                "Frontend demonstration only. No real payment is processed.";
+        }
+
+        if (button) {
+            button.textContent = "Submit Demo Request";
+        }
     }
 
-    document.getElementById('transAmount').value = '';
-    document.getElementById('transRef').value = '';
-    openModal('transModal');
+    openModal("transModal");
 }
 
-function handleTransaction(event) {
-    event.preventDefault();
-    const session = getActiveSession();
-    if (!session) return;
-
-    const amount = parseFloat(document.getElementById('transAmount').value);
-    const ref = document.getElementById('transRef').value.trim();
-    const method = document.querySelector('input[name="paymentMethod"]:checked').value;
-
-    if (isNaN(amount) || amount <= 0) {
-        showToast('Please enter a valid amount.', false);
+function handleTransactionManual() {
+    if (!CurrentUser) {
+        closeModal("transModal");
+        openModal("loginModal");
         return;
     }
 
-    if (currentTransType === 'deposit') {
-        // Add to user balance
-        session.balance += amount;
-        session.transactions.unshift({
-            id: 'DEP-' + Math.floor(100000 + Math.random() * 900000),
-            type: 'Deposit',
-            amount: amount,
-            method: method,
-            date: new Date().toLocaleDateString(),
-            status: 'Completed'
-        });
+    const amountInput = document.getElementById("transAmount");
+    const referenceInput = document.getElementById("transRef");
 
-        setActiveSession(session, true);
-        closeModal('transModal');
-        showToast(`Deposit of PKR ${amount.toLocaleString()} received and added to wallet!`);
-    } else {
-        // Withdraw logic
-        if (amount > session.balance) {
-            showToast('Insufficient balance for this withdrawal!', false);
+    if (!amountInput || !referenceInput) {
+        return;
+    }
+
+    const amount = Number(amountInput.value);
+    const reference = referenceInput.value.trim();
+
+    if (!amount || amount < 500) {
+        ShowToast(
+            "Enter an amount of at least PKR 500.",
+            "error"
+        );
+
+        return;
+    }
+
+    if (!reference) {
+        ShowToast(
+            "Please enter the demo transaction reference.",
+            "error"
+        );
+
+        return;
+    }
+
+    const method =
+        document.querySelector(
+            'input[name="paymentMethod"]:checked'
+        )?.value || "Demo";
+
+    const transaction = {
+        id: Date.now(),
+        type: CurrentTransactionType,
+        amount: amount,
+        method: method,
+        reference: reference,
+        status: "Demo",
+        createdAt: new Date().toISOString()
+    };
+
+    CurrentUser.transactions.push(transaction);
+
+    SaveCurrentUser(CurrentUser);
+
+    document.getElementById("transForm")?.reset();
+
+    closeModal("transModal");
+
+    UpdateDashboard();
+
+    ShowToast(
+        `${CurrentTransactionType === "deposit" ? "Deposit" : "Withdrawal"} demo request saved.`
+    );
+}
+
+/* ================================
+   Transactions Display
+================================ */
+
+function RenderTransactions() {
+    const container = document.getElementById("dashRecentTrans");
+
+    if (!container || !CurrentUser) {
+        return;
+    }
+
+    const transactions = CurrentUser.transactions || [];
+
+    if (transactions.length === 0) {
+        container.innerHTML = `
+            <p class="italic text-purple-300/70">
+                No demo transactions recorded.
+            </p>
+        `;
+
+        return;
+    }
+
+    container.innerHTML = transactions
+        .slice()
+        .reverse()
+        .slice(0, 10)
+        .map(transaction => `
+            <div class="flex items-center justify-between gap-3 border-b border-purple-800 pb-2">
+                <div>
+                    <strong class="text-white capitalize">
+                        ${EscapeHtml(transaction.type)}
+                    </strong>
+                    <div class="text-[10px] text-purple-300">
+                        ${EscapeHtml(transaction.method)}
+                    </div>
+                </div>
+
+                <div class="text-right">
+                    <strong class="text-amber-300">
+                        PKR ${Number(transaction.amount).toLocaleString()}
+                    </strong>
+
+                    <div class="text-[9px] text-purple-300">
+                        DEMO
+                    </div>
+                </div>
+            </div>
+        `)
+        .join("");
+}
+
+/* ================================
+   Referral
+================================ */
+
+function copyReferralLink() {
+    const input = document.getElementById("refLinkInput");
+    const buttonText = document.getElementById("copyBtnText");
+
+    if (!input) {
+        return;
+    }
+
+    const link = input.value;
+
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(link)
+            .then(() => {
+                if (buttonText) {
+                    buttonText.textContent = "Copied!";
+                }
+
+                ShowToast("Referral link copied.");
+
+                setTimeout(() => {
+                    if (buttonText) {
+                        buttonText.textContent = "Copy";
+                    }
+                }, 2000);
+            })
+            .catch(() => {
+                FallbackCopy(input);
+            });
+
+        return;
+    }
+
+    FallbackCopy(input);
+}
+
+function FallbackCopy(input) {
+    input.select();
+
+    document.execCommand("copy");
+
+    ShowToast("Referral link copied.");
+}
+
+function shareReferral(platform) {
+    if (!CurrentUser) {
+        openModal("loginModal");
+        return;
+    }
+
+    const input = document.getElementById("refLinkInput");
+
+    if (!input) {
+        return;
+    }
+
+    const link = input.value;
+
+    const message =
+        `Join the TajProfit demo platform: ${link}`;
+
+    let shareUrl = "";
+
+    if (platform === "whatsapp") {
+        shareUrl =
+            `https://wa.me/?text=${encodeURIComponent(message)}`;
+    }
+
+    if (platform === "facebook") {
+        shareUrl =
+            `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(link)}`;
+    }
+
+    if (platform === "telegram") {
+        shareUrl =
+            `https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent(message)}`;
+    }
+
+    if (platform === "native") {
+        if (navigator.share) {
+            navigator.share({
+                title: "TajProfit Demo",
+                text: message,
+                url: link
+            }).catch(() => {});
+
             return;
         }
 
-        session.balance -= amount;
-        session.transactions.unshift({
-            id: 'WTH-' + Math.floor(100000 + Math.random() * 900000),
-            type: 'Withdrawal',
-            amount: amount,
-            method: `${method} (${ref})`,
-            date: new Date().toLocaleDateString(),
-            status: 'Processing'
+        copyReferralLink();
+        return;
+    }
+
+    if (shareUrl) {
+        window.open(
+            shareUrl,
+            "_blank",
+            "noopener,noreferrer"
+        );
+    }
+}
+
+/* ================================
+   Forgot Password
+================================ */
+
+function handlePasswordRecovery(event) {
+    event.preventDefault();
+
+    const phone =
+        document.getElementById("recoverPhone")?.value.trim();
+
+    const newPassword =
+        document.getElementById("recoverNewPass")?.value;
+
+    const confirmPassword =
+        document.getElementById("recoverConfirmPass")?.value;
+
+    if (!phone || !newPassword || !confirmPassword) {
+        ShowToast("Please complete all fields.", "error");
+        return;
+    }
+
+    if (newPassword.length < 6) {
+        ShowToast(
+            "Password must contain at least 6 characters.",
+            "error"
+        );
+
+        return;
+    }
+
+    if (newPassword !== confirmPassword) {
+        ShowToast(
+            "Passwords do not match.",
+            "error"
+        );
+
+        return;
+    }
+
+    const users = GetUsers();
+
+    const index = users.findIndex(
+        user => user.phone === phone
+    );
+
+    if (index === -1) {
+        ShowToast(
+            "No demo account found with this mobile number.",
+            "error"
+        );
+
+        return;
+    }
+
+    users[index].password = newPassword;
+
+    SaveUsers(users);
+
+    document.getElementById("forgotForm")?.reset();
+
+    closeModal("forgotModal");
+
+    openModal("loginModal");
+
+    ShowToast("Password updated successfully.");
+}
+
+/* ================================
+   Office
+================================ */
+
+function showOfficeInfo(title, address) {
+    const titleElement =
+        document.getElementById("officeModalTitle");
+
+    const addressElement =
+        document.getElementById("officeModalAddress");
+
+    if (!titleElement || !addressElement) {
+        return;
+    }
+
+    titleElement.textContent = title;
+    addressElement.textContent = address;
+
+    openModal("officeModal");
+}
+
+/* ================================
+   Escape HTML
+================================ */
+
+function EscapeHtml(value) {
+    return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+}
+
+/* ================================
+   Close Modal on Background Click
+================================ */
+
+document.addEventListener("click", event => {
+    const modal = event.target;
+
+    if (
+        modal.classList &&
+        modal.classList.contains("fixed") &&
+        modal.classList.contains("inset-0") &&
+        modal.classList.contains("flex")
+    ) {
+        if (event.target === modal) {
+            modal.classList.add("hidden");
+            modal.classList.remove("flex");
+            document.body.classList.remove("overflow-hidden");
+        }
+    }
+});
+
+/* ================================
+   ESC Key
+================================ */
+
+document.addEventListener("keydown", event => {
+    if (event.key !== "Escape") {
+        return;
+    }
+
+    document
+        .querySelectorAll(".fixed.inset-0.flex")
+        .forEach(modal => {
+            modal.classList.add("hidden");
+            modal.classList.remove("flex");
         });
 
-        setActiveSession(session, true);
-        closeModal('transModal');
-        showToast(`Withdrawal of PKR ${amount.toLocaleString()} queued! Sent to ${ref}.`);
+    document.body.classList.remove("overflow-hidden");
+});
+
+/* ================================
+   Page Load
+================================ */
+
+document.addEventListener("DOMContentLoaded", () => {
+    CurrentUser = GetCurrentUser();
+
+    UpdateDashboard();
+
+    const referralCode =
+        new URLSearchParams(window.location.search)
+            .get("ref");
+
+    const referralInput =
+        document.getElementById("regRef");
+
+    if (referralCode && referralInput) {
+        referralInput.value = referralCode;
     }
-}
-
-// Plan Subscription Logic
-function executeBuyPlan(planName, cost, dailyReturn, days) {
-    const session = getActiveSession();
-    if (!session) {
-        closeModal('plansModal');
-        showToast('Please log in first to purchase an investment plan.', false);
-        openModal('loginModal');
-        return;
-    }
-
-    if (session.balance < cost) {
-        closeModal('plansModal');
-        showToast(`Insufficient balance! You need PKR ${cost.toLocaleString()}. Please deposit first.`, false);
-        openTransaction('deposit');
-        return;
-    }
-
-    // Deduct cost and activate plan
-    session.balance -= cost;
-    session.investments.push({
-        name: planName,
-        cost: cost,
-        dailyReturn: dailyReturn,
-        daysTotal: days,
-        daysLeft: days,
-        startDate: new Date().toLocaleDateString()
-    });
-
-    session.transactions.unshift({
-        id: 'INV-' + Math.floor(100000 + Math.random() * 900000),
-        type: 'Plan Purchase',
-        amount: cost,
-        method: planName,
-        date: new Date().toLocaleDateString(),
-        status: 'Active'
-    });
-
-    setActiveSession(session, true);
-    closeModal('plansModal');
-    showToast(`Success! You subscribed to ${planName}. Daily profit: PKR ${dailyReturn}.`);
-}
-
-// ==========================================
-// 5. UI SYNC & RENDER ENGINE
-// ==========================================
-
-function renderAppInterface() {
-    const session = getActiveSession();
-    
-    // Desktop Nav Elements
-    const authActions = document.getElementById('authActionsDesktop');
-    const userProfile = document.getElementById('userProfileDesktop');
-    const userNameDisplay = document.getElementById('userNameDisplay');
-    const userBalanceDisplay = document.getElementById('userBalanceDisplay');
-    const heroBtnText = document.getElementById('heroPrimaryBtnText');
-
-    // Dashboard Elements
-    const dashCard = document.getElementById('userDashboardCard');
-    const dashName = document.getElementById('dashUserName');
-    const dashPhone = document.getElementById('dashUserPhone');
-    const dashRef = document.getElementById('dashUserRef');
-    const dashBalance = document.getElementById('dashUserBalance');
-    const dashPlans = document.getElementById('dashActivePlans');
-    const dashTrans = document.getElementById('dashRecentTrans');
-
-    // Mobile Elements
-    const mobileAuthIcon = document.getElementById('mobileAuthIcon');
-    const mobileAuthLabel = document.getElementById('mobileAuthLabel');
-
-    if (session) {
-        // Sync Latest from DB
-        const users = getUsersDB();
-        const updated = users.find(u => u.id === session.id);
-        const current = updated || session;
-
-        // Desktop Nav
-        if (authActions) authActions.classList.add('hidden');
-        if (userProfile) {
-            userProfile.classList.remove('hidden');
-            userProfile.classList.add('flex');
-        }
-        if (userNameDisplay) userNameDisplay.innerText = current.name;
-        if (userBalanceDisplay) userBalanceDisplay.innerText = `PKR ${current.balance.toLocaleString()}`;
-
-        // Hero CTA button
-        if (heroBtnText) heroBtnText.innerText = 'Deposit Funds';
-
-        // Dashboard View
-        if (dashCard) dashCard.classList.remove('hidden');
-        if (dashName) dashName.innerText = current.name;
-        if (dashPhone) dashPhone.innerText = current.phone;
-        if (dashRef) dashRef.innerText = current.referral;
-        if (dashBalance) dashBalance.innerText = `PKR ${current.balance.toLocaleString()}`;
-
-        // Render Active Plans
-        if (dashPlans) {
-            if (current.investments && current.investments.length > 0) {
-                dashPlans.innerHTML = current.investments.map(p => `
-                    <div class="flex items-center justify-between p-2 rounded-xl bg-white/5 border border-white/10">
-                        <div>
-                            <span class="font-bold text-white">${p.name}</span>
-                            <span class="block text-[10px] text-amber-300">Daily: +PKR ${p.dailyReturn}</span>
-                        </div>
-                        <span class="text-[11px] font-bold bg-purple-800 text-purple-200 px-2 py-0.5 rounded-full">${p.daysLeft} Days Left</span>
-                    </div>
-                `).join('');
-            } else {
-                dashPlans.innerHTML = `<p class="italic text-purple-300/70">No active plans yet. Click 'Buy Plan' to begin earning daily returns.</p>`;
-            }
-        }
-
-        // Render Transactions
-        if (dashTrans) {
-            if (current.transactions && current.transactions.length > 0) {
-                dashTrans.innerHTML = current.transactions.map(t => `
-                    <div class="flex items-center justify-between py-1 border-b border-white/10">
-                        <span>${t.type} (${t.method})</span>
-                        <span class="font-bold ${t.type === 'Withdrawal' ? 'text-rose-400' : 'text-emerald-400'}">
-                            ${t.type === 'Withdrawal' ? '-' : '+'}PKR ${t.amount.toLocaleString()}
-                        </span>
-                    </div>
-                `).join('');
-            } else {
-                dashTrans.innerHTML = `<p class="italic text-purple-300/70">No transactions recorded.</p>`;
-            }
-        }
-
-        // Mobile Nav
-        if (mobileAuthIcon) mobileAuthIcon.className = 'fa-solid fa-arrow-right-from-bracket text-lg mb-0.5 text-red-500';
-        if (mobileAuthLabel) mobileAuthLabel.innerText = 'Logout';
-
-    } else {
-        // Logged Out State
-        if (authActions) authActions.classList.remove('hidden');
-        if (userProfile) {
-            userProfile.classList.add('hidden');
-            userProfile.classList.remove('flex');
-        }
-        if (dashCard) dashCard.classList.add('hidden');
-        if (heroBtnText) heroBtnText.innerText = 'Create Free Account';
-
-        if (mobileAuthIcon) mobileAuthIcon.className = 'fa-solid fa-arrow-right-to-bracket text-lg mb-0.5';
-        if (mobileAuthLabel) mobileAuthLabel.innerText = 'Login';
-    }
-}
-
-function showOfficeInfo(officeTitle, location) {
-    showToast(`${officeTitle}: ${location}`);
-}
-
-function switchTab(tab) {
-    if (tab === 'home') window.scrollTo({top: 0, behavior: 'smooth'});
-}
-
-// Initialise App State on Page Load
-document.addEventListener('DOMContentLoaded', renderAppInterface);
+});
